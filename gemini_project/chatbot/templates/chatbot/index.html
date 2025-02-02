@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Optional: link to external stylesheet for styling -->
+</head>
+<body>
+
+    <div id="chat-container">
+        <!-- Chat Output Area: This is where the conversation is displayed -->
+        <div id="chat-output" style="max-height: 400px; overflow-y: auto; margin-bottom: 20px; padding-right: 10px;">
+            <div id="chat-response"></div>
+        </div>
+
+        <!-- Input Field for User's Message -->
+        <div id="input-container" style="position: fixed; bottom: 20px; width: 100%; padding: 10px; background: #f1f1f1;">
+            <input type="text" id="user-input" placeholder="Type your message..." style="width: 80%; padding: 10px; border-radius: 5px; margin-right: 10px;">
+            <button id="send-message" onclick="sendMessage()" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px;">Send</button>
+        </div>
+
+        <!-- Logout Button (Visible only for logged-in users) -->
+        <div id="logout-container" style="position: fixed; bottom: 70px; left: 20px;">
+            <a href="{% url 'logout' %}" style="padding: 10px 20px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px;">Logout</a>
+        </div>
+    </div>
+
+    <!-- Chatbot Script -->
+    <script>
+        // JavaScript function to send the message to the backend and display the response
+        function sendMessage() {
+            var userInput = document.getElementById("user-input").value;
+            
+            // Check if input is not empty
+            if (userInput.trim() !== "") {
+                fetch('/chat/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ input_text: userInput }), // Send user input
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Display response in the chat-output area with HTML rendering
+                    document.getElementById("chat-response").innerHTML += `<div><strong>You:</strong> ${userInput}</div>`;
+                    document.getElementById("chat-response").innerHTML += `<div><strong>Bot:</strong><br>${data.response}</div>`;
+
+                    // Scroll to the bottom to show the latest messages
+                    document.getElementById("chat-output").scrollTop = document.getElementById("chat-output").scrollHeight;
+
+                    // Clear the input field after sending the message
+                    document.getElementById("user-input").value = "";
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        }
+
+        // Optionally, add event listener to send the message when the Enter key is pressed
+        document.getElementById("user-input").addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        });
+    </script>
+
+</body>
+</html>
